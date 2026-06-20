@@ -1,0 +1,30 @@
+name: Extract Weather Data
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours
+  workflow_dispatch:        # lets you trigger it manually too
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create secrets folder if missing
+        run: mkdir -p secrets
+
+      - name: Write GCP key to file
+        run: echo '${{ secrets.GCP_SA_KEY }}' > secrets/bigquery-key.json
+
+      - name: Run extract script
+        run: python extract/fetch_weather.py
